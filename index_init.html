@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-assets>
+        <a-asset-item id="neww" shadow="cast: false; receive: true" src="https://kostasgian21.github.io/computer_graphics/rubiks_cube_standard_solid_v3.glb"></a-asset-item>
+      </a-assets>
+      <a-assets>
+        <img id="crateTexture" src="https://kostasgian21.github.io/computer_graphics/grass_texture_local.jpg" crossorigin="anonymous"/>
+        <img id="skyTexture" src="https://kostasgian21.github.io/computer_graphics/360-degree_Panorama_of_the_Southern_Sky.jpg" crossorigin="anonymous"/>
+      </a-assets>
+
+
+      <a-sky src="#skyTexture" rotation="0 0 0"></a-sky>
+      <a-entity light="type: directional; intensity:6.2; color:#ffffff" position="1 4 2"></a-entity>
+      <a-entity light="type: ambient; intensity:2.35; color:#ffffff"></a-entity>
+      <a-entity light="type: point; intensity:3.6; distance:10" position="-3 2 0"></a-entity>
+      <a-entity light="type: point; intensity:3.6; distance:10" position="0 1 -5"></a-entity>
+      <a-entity gltf-model="#neww" position="-2 2 -2" scale="0.8 0.8 0.8"></a-entity> 
+
+      
+
+        <!-- Cluster of cubes with different rotations -->
+        <a-entity position="0 0 0">
+          <a-entity gltf-model="#neww" rotation="0 0 0" position="-1 1 -2" scale="0.8 0.8 0.8"></a-entity>
+        </a-entity>
+      </a-entity>
+
+      <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
+    </a-scene>
+  </body>
+</html>

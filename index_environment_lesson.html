@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>WebVR Nighttime Scavenger Hunt</title>
+  
+  <!-- 1. A-Frame Core Library -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <!-- 2. Environment Component -->
+  <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
+
+  <!-- 3. Custom JavaScript with Component Schema -->
+  <script>
+    let score = 0;
+    let remainingTreasures = 0; // Automatically counts all collectibles in the scene
+
+    AFRAME.registerComponent('collectible', {
+      // SCHEMA: Defines custom HTML attributes for this component
+      schema: {
+        points: { type: 'number', default: 1 },
+        itemName: { type: 'string', default: 'Treasure' },
+        hoverColor: { type: 'color', default: '#444444' }
+      },
+
+      init: function () {
+        let el = this.el;
+        let data = this.data; // Access the schema values passed from HTML
+
+        // Automatically increment total treasures when the scene loads
+        remainingTreasures++;
+
+        // Visual feedback when the flashlight/cursor hits the object
+        el.addEventListener('mouseenter', function () {
+          el.setAttribute('material', 'emissive', data.hoverColor);
+          el.setAttribute('scale', '1.15 1.15 1.15');
+        });
+
+        el.addEventListener('mouseleave', function () {
+          el.setAttribute('material', 'emissive', '#000000');
+          el.setAttribute('scale', '1 1 1');
+        });
+
+        // Collection logic
+        el.addEventListener('click', function () {
+          // Hide object and disable raycasting
+          el.setAttribute('visible', 'false');
+          el.classList.remove('clickable');
+
+          // Update score using the custom 'points' schema property
+          score += data.points;
+          remainingTreasures--;
+
+          const display = document.getElementById('scoreDisplay');
+          display.innerText = `Found ${data.itemName} (+${data.points} pts) | Total Score: ${score}`;
+
+          // Check win condition based on remaining items, not score
+          if (remainingTreasures === 0) {
+            display.innerText = `All treasures found! Final Score: ${score}`;
+            display.style.color = "#00ff00";
+          }
+        });
+      }
+    });
+  </script>
+
+  <!-- 4. 2D UI Overlay -->
+  <style>
+    #ui-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.75);
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 22px;
+      font-weight: bold;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- The 2D Screen UI -->
+  <div id="ui-container">
+    <span id="scoreDisplay">Use your flashlight to find the treasures! | Score: 0</span>
+  </div>
+
+  <!-- 
+    THE 3D SCENE 
+    shadow="type: pcfsoft" enables soft real-time shadows across the WebGL renderer
+  -->
+  <a-scene shadow="type: pcfsoft">
+    
+    <a-assets>
+      <!-- Students can preload Tinkercad .glb files here -->
+    </a-assets>
+
+    <!-- 
+      ATMOSPHERE & ENVIRONMENT
+      lighting: none turns off default daylight.
+      fog: 0.85 adds thick nighttime mist.
+    -->
+    <a-entity environment="preset: forest; dressingAmount: 50; groundColor: #222831; skyType: atmosphere; skyColor: #050811; horizonColor: #111827; lighting: none; fog: 0.85"></a-entity>
+
+    <!-- 
+      GLOBAL AMBIENT LIGHT
+      Dim blue-ish moonlight so the scene isn't completely pitch black
+    -->
+    <a-light type="ambient" color="#334466" intensity="0.35"></a-light>
+
+    <!-- PLAYER CAMERA & FLASHLIGHT -->
+    <a-camera position="0 1.6 0">
+      <a-cursor color="yellow" raycaster="objects: .clickable"></a-cursor>
+      
+      <!-- 
+        SPOTLIGHT (Flashlight)
+        angle: width of the beam in degrees
+        penumbra: softness of the beam's outer edge (0 to 1)
+        castShadow: true allows this light to project shadows onto the ground
+      -->
+      <a-light type="spot" 
+               color="#fffbe6" 
+               intensity="2.5" 
+               distance="18" 
+               angle="32" 
+               penumbra="0.6" 
+               castShadow="true"
+               shadow-mapSize="1024 1024">
+      </a-light>
+    </a-camera>
+
+    <!-- 
+      HIDDEN TREASURES USING CUSTOM SCHEMA PROPERTIES
+      Notice how each entity passes different values into collectible="..."
+    -->
+    
+    <!-- Treasure 1: Common Item (1 pt) -->
+    <a-box class="clickable" 
+           collectible="points: 1; itemName: Bronze Cube; hoverColor: #886600" 
+           shadow="cast: true"
+           color="#cd7f32" 
+           position="-3 1.2 -4" 
+           rotation="0 45 0" 
+           animation="property: rotation; to: 0 405 0; loop: true; dur: 3000">
+    </a-box>
+
+    <!-- Treasure 2: Uncommon Item (3 pts) -->
+    <a-sphere class="clickable" 
+              collectible="points: 3; itemName: Plasma Orb; hoverColor: #aa00aa" 
+              shadow="cast: true"
+              color="magenta" 
+              position="4 1.5 -6" 
+              radius="0.5"
+              animation="property: position; to: 4 2.1 -6; dir: alternate; loop: true; dur: 2000">
+    </a-sphere>
+
+    <!-- Treasure 3: Rare Item (5 pts) -->
+    <a-octahedron class="clickable" 
+                  collectible="points: 5; itemName: Cyber Diamond; hoverColor: #00aaaa" 
+                  shadow="cast: true"
+                  color="cyan" 
+                  position="0 1.0 -9" 
+                  radius="0.6"
+                  animation="property: rotation; to: 360 360 0; loop: true; dur: 4000">
+    </a-octahedron>
+
+  </a-scene>
+</body>
+</html>
